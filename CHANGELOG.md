@@ -19,6 +19,7 @@ This release adds a new cli commands to Bridge, new data output formats as well 
 - `--tcp-out` **no longer binds a port**. Now, `sifibridge` connects as a **client** to the specified IP address.
 - The LSL integration has been majorly reworked, now supporting dynamic reconfiguration of streams as devices are reconfigured.
 - Updated inline documentation strings.
+- Status packet `memory_used_kb` has been changed to `memory_used_kbytes` for better clarity
 
 ### Fixed
 
