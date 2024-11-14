@@ -2,6 +2,20 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
+## [1.2.1] - 2024-11-14
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Connect by UUID/MAC now works again.
+
+### Known issues
+
+Archer TX50E Bluetooth adapter currently does not work with BioArmband since a recent driver update (tested on PopOs 22.04 and Windows 11).
+
 ## [1.2.0] - 2024-10-14
 
 This release adds a new cli commands to Bridge, new data output formats as well as some fairly major internal changes, resulting in a better overall experience.
@@ -19,7 +33,6 @@ This release adds a new cli commands to Bridge, new data output formats as well 
 - `--tcp-out` **no longer binds a port**. Now, `sifibridge` connects as a **client** to the specified IP address.
 - The LSL integration has been majorly reworked, now supporting dynamic reconfiguration of streams as devices are reconfigured.
 - Updated inline documentation strings.
-- Status packet `memory_used_kb` has been changed to `memory_used_kbytes` for better clarity
 
 ### Fixed
 
