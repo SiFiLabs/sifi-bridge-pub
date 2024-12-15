@@ -2,6 +2,42 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
+## [1.3.0] - 2024-12-15
+
+This release adds many new features to SiFi Bridge, a built-in Lua plugin system, DFU, shell completion script generation, verbose flags. It also contains some formatting changes made for consistency and robustness. 
+
+### Added
+
+- Lua plugins are now supported in the REPL with `>>> plugin -[source] path/to/plugin.lua`. They apply to the _active_ device only and can receive data either from biosensors (EMG, ECG, etc.) or from other plugins.
+- ̀`sifibridge completion <SHELL>` commands to generate CLI autocompletion scripts.
+- `sifibridge ble upgrade [...]` command to upgrade a device's firmware.
+- `-v[...]` verbose flag added to show internal logs.
+- Added a "connected" field to `>>> show`.
+- Added progress indicators for the `sifibridge ble analyze` suite of commands
+- Temperature values are now treated as a first-class BioSensor, meaning it can be used with all publishers and plugins.
+
+### Changed
+
+- A "new" response is sent upon startup, in response to sifibridge creating a default device.
+- Responses are now sent with a more robust format: `{"response_type": {<payload as before>}}`.
+- Battery field in status packet renamed to `"battery_%"`.
+- `>>> show` now includes more information, such as `"battery_%"` and `"memory_used_kbytes"`.
+- BioArmband has been renamed to SiFiBand.
+- Timestamps now use the local time instead of UTC.
+- All serialization is now in snake_case, **except** the device type field (BioPointV1_3, SiFiBand)
+- PPG values are now scaled in nA instead of pA
+
+### Fixed
+
+- CSV publisher now handles multiple devices properly
+- Fixed a regression with BioPoint_v1_0
+  
+### Known issues
+
+- Archer TX50E Bluetooth adapter currently does not work with BioArmband since a recent driver update (tested on PopOs 22.04 and Windows 11).
+- M2/M3-based Macs seem to have high latency with SiFiBand.
+- Some computers seem to have high latency when restarting `sifibridge`.
+
 ## [1.2.1] - 2024-11-14
 
 ### Added
