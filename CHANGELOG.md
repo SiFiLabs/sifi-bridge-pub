@@ -2,9 +2,32 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
+## [1.3.1] - 2025-02-02
+
+This release implements some security fixes.
+
+### Added
+
+- Upon startup and when `connect`ing or `list ble`ing, an error message is sent to `stderr` if BLE is off.
+
+### Changed
+
+### Fixed
+
+- Fixed the  error message returned when `select`ing an inexisting device.
+- Added checks to ensure a connection cannot be stolen (e.g., `connect BioPoint_v1_3; new device2; connect BioPoint_v1_3`).
+- Fixed a bug where without `-p`, some response messages would not be printed on screen.
+- Archer TX50E (Intel chipset) SiFiBand connection issues were fixed with a SiFiBand firmware update.
+  
+### Known issues
+
+- To monitor: whether the missing printed messages is 100% fixed.
+- M2/M3-based Macs seem to have much lower BLE throughput than expected, leading to lost data (`lost_data_count` key of packets).
+- Some computers seem to have high latency when restarting `sifibridge`.
+
 ## [1.3.0] - 2024-12-15
 
-This release adds many new features to SiFi Bridge, a built-in Lua plugin system, DFU, shell completion script generation, verbose flags. It also contains some formatting changes made for consistency and robustness. 
+This release adds many new features to SiFi Bridge, a built-in Lua plugin system, DFU, shell completion script generation, verbose flags. It also contains some formatting changes made for consistency and robustness.
 
 ### Added
 
