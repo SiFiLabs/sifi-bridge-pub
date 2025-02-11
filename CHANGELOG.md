@@ -2,6 +2,29 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
+## [1.3.2] - 2025-02-11
+
+This release allows to connect to arbitrarily-named SifiBands and BioPoints.
+
+### Added
+
+- `show` shows the MAC address.
+  
+### Changed
+
+- Bridge is able to connect and detect the device type for any Sifiband/BioPoint versions.
+
+### Fixed
+
+- Fixed temperature packets not being generated with SiFiBand
+- Fixed an issue with Sifiband type detection
+  
+### Known issues
+
+- To monitor: whether the missing printed messages issue is 100% fixed.
+- M2/M3-based Macs seem to have much lower BLE throughput than expected, leading to lost data (`lost_data_count` key of packets).
+- Some computers seem to have high latency when restarting `sifibridge`.
+
 ## [1.3.1] - 2025-02-02
 
 This release implements some security fixes.
