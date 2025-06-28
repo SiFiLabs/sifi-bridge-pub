@@ -2,6 +2,19 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
+## [1.3.4] - 2025-04-02
+
+This release allows Linux users to select a specific bluetooth adapter. This feature has only been tested on a Ubuntu system using `bluez`.
+
+### Added
+
+- **Linux only**: setting the `SIFIBRIDGE_BLE_ADAPTER` environment variable to a bluetooth adapter (e.g., `hci0`) will make sifibridge prioritize using that adapter, falling back to the first found adapter otherwise.
+- Added support for serial download to CSV
+
+### Fixed
+
+- Improved the robustness of CSV publisher
+
 ## [1.3.3] - 2025-03-14
 
 This release changes the Linux compilation runner.
