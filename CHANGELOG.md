@@ -2,6 +2,119 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
+## [2.0.0] - 2025-XX-XX
+
+This release is made jointly with the release of the next generation SiFi devices with expanded configuration capabilities. Refer to the revamped User Guide for in-depth documentation about the new features and possible configurations.
+
+The most important user-facing changes are the new [Data Packet structure](#new-packet-structure-ppg).
+
+### Added
+
+- Added support for changing sensor sampling rates. Please be wary of the limitations as described in the docs
+- Added new IMU configurations to REPL, refer to docs for details
+- Added new PPG configurations to REPL, refer to docs for details
+- Added mains notch and DC notch filtering to ECG, EMG and EDA/BIOZ
+- Added "timestamps" key to packets, which contain the unix epoch timestamp of each sample. Timestamps are calculated from the **number of samples of the channel** and **its configured sampling rate**, **not** the on-the-fly `sampling_rate` packet value
+- Added DFU to REPL options, although the current implementation pollutes stdout
+- Added support for automatic reconfiguration from StartPacket
+- Added `>>> download-memory` to REPL for a more streamlined interface to download a device's memory to CSV
+- Added `>>> command identify-hardware` to fetch hardware configuration from device. Only internally useful
+- Added `>>> configure stealth-mode` to disable the LEDs during acquisition for specific use cases
+- Added `>>> configure motor-intensity` to set the desired vibration motor intensity
+- Added `>>> configure adc-gain` to configure the ECG and EMG ADC gain either in high resolution mode or high dynamic range mode
+- Added `>>> firmware-update` DFU capability within the REPL, although the current integration is still under development for robustness
+
+### Changed
+
+- Removed "Max" from BleTxPower options.
+- PPG is now internally buffered to always deliver packets with each channel of equal length
+- Renamed `>>> configure channels` to `>>> configure sensors` for consistency
+- All sensor configurations are now optional. Omitting a parameter will leave it as-is. This allows much better future extensibility
+- The manager automatically reconfigures itself from the parameters sent by the device, for example at the start of an acquisition or Identify Hardware packet
+- Deprecated `>>> serial` due to the new `>>> download-memory` command
+
+### Fixed
+
+- Fixed PPG conversion factors and added real-time update of PPG parameters
+- Memory download sample timestamps are now valid
+- Varia robustness fixes, especially in BLE handling
+
+### New packet structure (PPG)
+
+```json
+{
+  "device": "BioPointV1_3",
+  "id": "default-1",
+  "mac": "00:11:22:33:44:55:66",
+  "packet_type": "ppg",
+  "data": {
+    "g": [
+      8133.8832600000005,
+      ...,
+      8133.742590000001
+    ],
+    "b": [
+      8066.9243400000005,
+      ...,
+      8067.768360000001
+    ],
+    "r": [
+      8057.780790000001,
+      ...,
+      8057.5776000000005
+    ],
+    "ir": [
+      8075.4739500000005,
+      ...,
+      8074.629930000001
+    ]
+  },
+  "data_timestamps": {
+    "r": [
+      1758673309.48,
+      ...,
+      1758673310.2
+    ],
+    "g": [
+      1758673309.48,
+      ...,
+      1758673310.2
+    ],
+    "ir": [
+      1758673309.48,
+      ...,
+      1758673310.2
+    ],
+    "b": [
+      1758673309.48,
+      ...,
+      1758673310.2
+    ]
+  },
+  "data_lost_count": {
+    "g": 0,
+    "ir": 0,
+    "r": 0,
+    "b": 0
+  },
+  "sample_rate": 42.39877719866005,
+  "status": "ok",
+  "timestamp": 1758673310.618
+}
+```
+
+## [1.4.0] - 2025-07-20
+
+This release adds a new command to the REPL to download to CSV and makes the BLE handling more robust.
+
+### Added
+
+- `download-memory` command in the REPL to download the device's onboard memory to CSV files. Supports BLE and serial download.
+
+### Fixed
+
+- Improved the robustness of BLE handling
+
 ## [1.3.4] - 2025-04-02
 
 This release allows Linux users to select a specific bluetooth adapter. This feature has only been tested on a Ubuntu system using `bluez`.
