@@ -2,7 +2,7 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
-## [2.0.0] - 2025-XX-XX
+## [2.0.0] - 2026-XX-XX
 
 This release is made jointly with the release of the next generation SiFi devices with expanded configuration capabilities. Refer to the revamped User Guide for in-depth documentation about the new features and possible configurations.
 
@@ -17,21 +17,28 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Added "timestamps" key to packets, which contain the unix epoch timestamp of each sample. Timestamps are calculated from the **number of samples of the channel** and **its configured sampling rate**, **not** the on-the-fly `sampling_rate` packet value
 - Added DFU to REPL options, although the current implementation pollutes stdout
 - Added support for automatic reconfiguration from StartPacket
-- Added `>>> download-memory` to REPL for a more streamlined interface to download a device's memory to CSV
-- Added `>>> command identify-hardware` to fetch hardware configuration from device. Only internally useful
-- Added `>>> configure stealth-mode` to disable the LEDs during acquisition for specific use cases
-- Added `>>> configure motor-intensity` to set the desired vibration motor intensity
-- Added `>>> configure adc-gain` to configure the ECG and EMG ADC gain either in high resolution mode or high dynamic range mode
-- Added `>>> firmware-update` DFU capability within the REPL, although the current integration is still under development for robustness
+- Added `> download-memory` to REPL for a more streamlined interface to download a device's memory to CSV
+- Added `> command identify-hardware` to fetch hardware configuration from device. Only internally useful
+- Added `> configure stealth-mode` to disable the LEDs during acquisition for specific use cases
+- Added `> configure motor-intensity` to set the desired vibration motor intensity
+- Added `> configure adc-gain` to configure the ECG and EMG ADC gain either in high resolution mode or high dynamic range mode
+- Added `> firmware-update` DFU capability within the REPL, although the current integration is still under development for robustness
+- Added support for device events, which are currently either (a) button press or (b) software event (see [this section](#events))
+- Added `> event` to generate a "Software Event"
+- Added `"start_time"` key to Start Time packet. It contains the acquisition start time as a unix epoch timestamp, used internally as the acquisition's timebase
 
 ### Changed
 
-- Removed "Max" from BleTxPower options.
-- PPG is now internally buffered to always deliver packets with each channel of equal length
-- Renamed `>>> configure channels` to `>>> configure sensors` for consistency
+- Changed the prompt from `>>>` to `>`
+- Removed "Max" from BleTxPower options
+- PPG now always delivers packets with each channel of equal length
+- Renamed `> configure channels` to `> configure sensors` for consistency
 - All sensor configurations are now optional. Omitting a parameter will leave it as-is. This allows much better future extensibility
-- The manager automatically reconfigures itself from the parameters sent by the device, for example at the start of an acquisition or Identify Hardware packet
-- Deprecated `>>> serial` due to the new `>>> download-memory` command
+- Devices automatically reconfigure themselves from the parameters sent by the device, for example at the start of an acquisition or Identify Hardware packet
+- Deprecated `> serial` due to the new `> download-memory` command
+- Removed `--all` flags from `> start; stop; event` commands, as they added unnecessary complexity and it is expected that frontends will keep track of created devices anyways
+- Renamed `"devices"` field from `> start; stop; event` commands to `"id"` to be in-line with the other packets' schema
+- Renamed `"data_lost_count"` Data Packet key to `"samples_lost"`
 
 ### Fixed
 
@@ -69,38 +76,48 @@ The most important user-facing changes are the new [Data Packet structure](#new-
       8074.629930000001
     ]
   },
-  "data_timestamps": {
-    "r": [
-      1758673309.48,
-      ...,
-      1758673310.2
-    ],
-    "g": [
-      1758673309.48,
-      ...,
-      1758673310.2
-    ],
-    "ir": [
-      1758673309.48,
-      ...,
-      1758673310.2
-    ],
-    "b": [
-      1758673309.48,
-      ...,
-      1758673310.2
-    ]
-  },
-  "data_lost_count": {
-    "g": 0,
-    "ir": 0,
-    "r": 0,
-    "b": 0
-  },
+  "timestamps": [
+    1758673309.48,
+    ...,
+    1758673310.2
+  ],
+  "samples_lost": 0,
   "sample_rate": 42.39877719866005,
   "status": "ok",
   "timestamp": 1758673310.618
 }
+```
+
+### Events
+
+Events are externally generated, currently either via button or software (BLE command). They can be used in live trials to mark something in time in sync with other sensors. They are treated much like other sensors.
+
+The following event types are defined, and are encoded with the packet's `data` field. The timestamp is the time at which the event occured, just like all other sensors.
+
+- 0: null event (should never occur)
+- 1: button event
+- 2: software event
+
+```json
+
+ {
+  "device": "BioPointV1_3",
+  "id": "default-1",
+  "mac": "00:11:22:33:44:55:66",
+  "packet_type": "event",
+  "data": {
+    "event": [1],
+  },
+  "data_timestamps": {
+    "event": [1758673309.48],
+  },
+  "data_lost_count": {
+    "event": 0,
+  },
+  "sample_rate": 0,
+  "status": "ok",
+  "timestamp": 1758673310.618
+} 
 ```
 
 ## [1.4.0] - 2025-07-20
