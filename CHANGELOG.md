@@ -33,8 +33,8 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Removed "Max" from BleTxPower options
 - PPG now always delivers packets with each channel of equal length
 - Renamed `> configure channels` to `> configure sensors` for consistency
-- All sensor configurations are now optional. Omitting a parameter will leave it as-is. This allows much better future extensibility
-- Devices automatically reconfigure themselves from the parameters sent by the device, for example at the start of an acquisition or Identify Hardware packet
+- All sensor configurations are now optional. Omitting a parameter will leave it as-is.
+- Devices sessions automatically reconfigure themselves from the parameters sent by the device, for example at the start of an acquisition or Identify Hardware packet
 - Deprecated `> serial` due to the new `> download-memory` command
 - Removed `--all` flags from `> start; stop; event` commands, as they added unnecessary complexity and it is expected that frontends will keep track of created devices anyways
 - Renamed `"devices"` field from `> start; stop; event` commands to `"id"` to be in-line with the other packets' schema
@@ -99,25 +99,24 @@ The following event types are defined, and are encoded with the packet's `data` 
 - 2: software event
 
 ```json
-
- {
+{
   "device": "BioPointV1_3",
   "id": "default-1",
   "mac": "00:11:22:33:44:55:66",
   "packet_type": "event",
   "data": {
-    "event": [1],
+    "event": [1]
   },
   "data_timestamps": {
-    "event": [1758673309.48],
+    "event": [1758673309.48]
   },
   "data_lost_count": {
-    "event": 0,
+    "event": 0
   },
   "sample_rate": 0,
   "status": "ok",
   "timestamp": 1758673310.618
-} 
+}
 ```
 
 ## [1.4.0] - 2025-07-20
@@ -160,7 +159,7 @@ This release allows to connect to arbitrarily-named SifiBands and BioPoints.
 ### Added
 
 - `show` shows the MAC address.
-  
+
 ### Changed
 
 - Bridge is able to connect and detect the device type for any Sifiband/BioPoint versions.
@@ -169,7 +168,7 @@ This release allows to connect to arbitrarily-named SifiBands and BioPoints.
 
 - Fixed temperature packets not being generated with SiFiBand
 - Fixed an issue with Sifiband type detection
-  
+
 ### Known issues
 
 - To monitor: whether the missing printed messages issue is 100% fixed.
@@ -188,11 +187,11 @@ This release implements some security fixes.
 
 ### Fixed
 
-- Fixed the  error message returned when `select`ing an inexisting device.
+- Fixed the error message returned when `select`ing an inexisting device.
 - Added checks to ensure a connection cannot be stolen (e.g., `connect BioPoint_v1_3; new device2; connect BioPoint_v1_3`).
 - Fixed a bug where without `-p`, some response messages would not be printed on screen.
 - Archer TX50E (Intel chipset) SiFiBand connection issues were fixed with a SiFiBand firmware update.
-  
+
 ### Known issues
 
 - To monitor: whether the missing printed messages is 100% fixed.
@@ -228,7 +227,7 @@ This release adds many new features to SiFi Bridge, a built-in Lua plugin system
 
 - CSV publisher now handles multiple devices properly
 - Fixed a regression with BioPoint_v1_0
-  
+
 ### Known issues
 
 - Archer TX50E Bluetooth adapter currently does not work with BioArmband since a recent driver update (tested on PopOs 22.04 and Windows 11).
