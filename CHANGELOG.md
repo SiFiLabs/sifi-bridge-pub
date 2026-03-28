@@ -14,8 +14,7 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Added new IMU configurations to REPL, refer to docs for details
 - Added new PPG configurations to REPL, refer to docs for details
 - Added mains notch and DC notch filtering to ECG, EMG and EDA/BIOZ
-- Added "timestamps" key to packets, which contain the unix epoch timestamp of each sample. Timestamps are calculated from the **number of samples of the channel** and **its configured sampling rate**, **not** the on-the-fly `sampling_rate` packet value
-- Added DFU to REPL options, although the current implementation pollutes stdout
+- Added `timestamps` key to packets, which contain the unix epoch timestamp of each sample. Timestamps are calculated from the **number of samples of the channel** and **its configured sampling rate**, **not** the on-the-fly `sampling_rate` packet value
 - Added support for automatic reconfiguration from StartPacket
 - Added `> download-memory` to REPL for a more streamlined interface to download a device's memory to CSV
 - Added `> command identify-hardware` to fetch hardware configuration from device. Only internally useful
@@ -23,9 +22,11 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Added `> configure motor-intensity` to set the desired vibration motor intensity
 - Added `> configure adc-gain` to configure the ECG and EMG ADC gain either in high resolution mode or high dynamic range mode
 - Added `> firmware-update` DFU capability within the REPL, although the current integration is still under development for robustness
-- Added support for device events, which are currently either (a) button press or (b) software event (see [this section](#events))
+- Added support for device events, which are currently either (a) button press or (b) software event (see [here](#events))
 - Added `> event` to generate a "Software Event"
-- Added `"start_time"` key to Start Time packet. It contains the acquisition start time as a unix epoch timestamp, used internally as the acquisition's timebase
+- Added `"start_time"` key to Start Time packet. It contains the acquisition start time as a unix epoch timestamp, used internally as the acquisition's timebase for the current acquisition
+- Added the buffering subsystem exposed via `buffer` subcommands.
+- Added the HDF5 export format, which is more efficient, self-contained and more adapted for biosignal acquisitions under `buffer export hdf`.
 
 ### Changed
 
@@ -36,9 +37,13 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - All sensor configurations are now optional. Omitting a parameter will leave it as-is.
 - Devices sessions automatically reconfigure themselves from the parameters sent by the device, for example at the start of an acquisition or Identify Hardware packet
 - Deprecated `> serial` due to the new `> download-memory` command
+- `> download-memory` downloads the data from the device memory into the **buffering subsystem**. To export to file, it is required to subsequently use `buffer export`
 - Removed `--all` flags from `> start; stop; event` commands, as they added unnecessary complexity and it is expected that frontends will keep track of created devices anyways
 - Renamed `"devices"` field from `> start; stop; event` commands to `"id"` to be in-line with the other packets' schema
 - Renamed `"data_lost_count"` Data Packet key to `"samples_lost"`
+- Changed `"timestamps"` to be relative to the acquisition start time instead of Unix Epoch
+- Allow deleting the last device manager with graceful behavior
+- CSV publisher has been removed. It is now a thin hook onto the buffering subsystem in an export-only manner using `buffer export csv [...]`.
 
 ### Fixed
 
