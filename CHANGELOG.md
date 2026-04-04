@@ -44,6 +44,8 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Changed `"timestamps"` to be relative to the acquisition start time instead of Unix Epoch
 - Allow deleting the last device manager with graceful behavior
 - CSV publisher has been removed. It is now a thin hook onto the buffering subsystem in an export-only manner using `buffer export csv [...]`.
+- `on50`, `on60` renamed to `50` and `60` in the CLI arguments
+- PPG `acc-range` and `gyro-range` now only take a numeric argument for readability
 
 ### Fixed
 
