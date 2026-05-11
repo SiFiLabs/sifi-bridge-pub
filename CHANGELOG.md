@@ -22,14 +22,18 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Added `> configure motor-intensity` to set the desired vibration motor intensity
 - Added `> configure adc-gain` to configure the ECG and EMG ADC gain either in high resolution mode or high dynamic range mode
 - Added `> firmware-update` DFU capability within the REPL, although the current integration is still under development for robustness
+- Added `> rename` command to rename a device. You can then connect either via the custom name, device type (eg BioPoint) or auto-connect
 - Added support for device events, which are currently either (a) button press or (b) software event (see [here](#events))
 - Added `> event` to generate a "Software Event"
 - Added `"start_time"` key to Start Time packet. It contains the acquisition start time as a unix epoch timestamp, used internally as the acquisition's timebase for the current acquisition
 - Added the buffering subsystem exposed via `buffer` subcommands.
 - Added the HDF5 export format, which is more efficient, self-contained and more adapted for biosignal acquisitions under `buffer export hdf`.
+- Added `--all` flag to `> configure`, `> command`, `> start`, `> stop` and `> event` to apply the command to every managed device instead of only the active one. Per-device responses are returned as an aggregated `multi` response.
 
 ### Changed
 
+- Streamlined device information in command responses. Commands include: the device unique `id`, the device name `name`, connection status `connected`, device type `device`. All commands include this info, **except Buffer commands and List**.
+- Streamlined REPL commands failure mode. Commands that fail (i.e., trying to configure without a device) will return an `Error` with an optional `message` field containing details on the error
 - Changed the prompt from `>>>` to `>`
 - Removed "Max" from BleTxPower options
 - PPG now always delivers packets with each channel of equal length
@@ -45,6 +49,8 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - CSV publisher has been removed. It is now a thin hook onto the buffering subsystem in an export-only manner using `buffer export csv [...]`.
 - `on50`, `on60` renamed to `50` and `60` in the CLI arguments
 - PPG `acc-range` and `gyro-range` now only take a numeric argument for readability
+- Removed deep sleep command as it is now obsolete
+- Reworked the device lifecycle (see [here](#device-lifecycle))
 
 ### Fixed
 
@@ -124,6 +130,52 @@ The following event types are defined, and are encoded with the packet's `data` 
   "timestamp": 1758673310.618
 }
 ```
+
+### Device lifecycle
+
+In previous sifibridge versions, devices had an immutable name (BioPoint_v1_3, SiFiBand, etc.). To handle multiple devices at once, sifibridge proposed _managers_, which were basically a software abstraction with a user-defined name to interact with a device.
+
+They were created with `> new <manager name>` and deleted with `> delete`. After creation, the user needed to `> connect` to a device. In short, it was a 2-step workflow.
+
+The new firmware supports _custom naming_, and devices expose their generic, unique name in the advertisement. This means that devices can be differentiated even with the same user-facing _BLE local name_. This allowed us to make the manager transparent.
+
+**The changes.** `new` and `delete` were removed from the CLI. `connect`ing to a device will create a manager and connect to the device. `disconnect`ing will disconnect and delete the manager.
+
+At the same time, the commands include more information about the device:
+
+```json
+> connect
+{
+  "connect": {
+    "id": "C2:EC:EF:30:0D:10",
+    "name": "my_biopoint",
+    "device": "BioPointV1_3",
+    "connected": true,
+    "mac": "C2:EC:EF:34:0E:00"
+  }
+}
+```
+
+where `id` is the manager's ID, `name` is the device's BLE local name, `device` is the device type, and `mac` is the device's MAC address (UUID on MacOS).
+
+As for `list devices`:
+
+```json
+> list devices
+{
+  "list": {
+    "devices": [
+      {
+        "id": "C2:EC:EF:34:0E:00",
+        "name": "my_biopoint"
+      }
+    ]
+  }
+}
+
+```
+
+Devices can be `select`ed both via **ID** or **name**. Same for `buffer` commands.
 
 ## [1.4.0] - 2025-07-20
 
