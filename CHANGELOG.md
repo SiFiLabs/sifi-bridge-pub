@@ -8,8 +8,6 @@ This release is made jointly with the release of the next generation SiFi device
 
 The most important user-facing changes are the new [Data Packet structure](#new-packet-structure-ppg).
 
-### Added
-
 - Added support for changing sensor sampling rates. Please be wary of the limitations as described in the docs
 - Added new IMU configurations to REPL, refer to docs for details
 - Added new PPG configurations to REPL, refer to docs for details
@@ -29,9 +27,6 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Added the buffering subsystem exposed via `buffer` subcommands.
 - Added the HDF5 export format, which is more efficient, self-contained and more adapted for biosignal acquisitions under `buffer export hdf`.
 - Added `--all` flag to `> configure`, `> command`, `> start`, `> stop` and `> event` to apply the command to every managed device instead of only the active one. Per-device responses are returned as an aggregated `multi` response.
-
-### Changed
-
 - Streamlined device information in command responses. Commands include: the device unique `id`, the device name `name`, connection status `connected`, device type `device`. All commands include this info, **except Buffer commands and List**.
 - Streamlined REPL commands failure mode. Commands that fail (i.e., trying to configure without a device) will return an `Error` with an optional `message` field containing details on the error
 - Changed the prompt from `>>>` to `>`
@@ -51,12 +46,11 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - PPG `acc-range` and `gyro-range` now only take a numeric argument for readability
 - Removed deep sleep command as it is now obsolete
 - Reworked the device lifecycle (see [here](#device-lifecycle))
-
-### Fixed
-
 - Fixed PPG conversion factors and added real-time update of PPG parameters
-- Memory download sample timestamps are now valid
-- Varia robustness fixes, especially in BLE handling
+- Fixed Memory download sample timestamps
+- Improved BLE robustness in the connection process
+- Removed `BioPoint_v1_0`, `BioPoint_v1_1`, etc. in favor of a unified `BioPoint` device type. `show` contains the `firmware_version` and `hardware_version` fields (new firmware only).
+- Sending commands (configure, etc.) without a device returns an `error` instead of an error log
 
 ### New packet structure (PPG)
 
