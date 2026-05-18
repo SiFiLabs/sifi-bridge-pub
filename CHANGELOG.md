@@ -51,6 +51,7 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Improved BLE robustness in the connection process
 - Removed `BioPoint_v1_0`, `BioPoint_v1_1`, etc. in favor of a unified `BioPoint` device type. `show` contains the `firmware_version` and `hardware_version` fields (new firmware only).
 - Sending commands (configure, etc.) without a device returns an `error` instead of an error log
+- `download-memory` has been changed to a device-blocking operation. Upon completion, it returns a `download-memory` response. A timeout or fail returns a `error` response.
 
 ### New packet structure (PPG)
 
