@@ -52,6 +52,12 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Removed `BioPoint_v1_0`, `BioPoint_v1_1`, etc. in favor of a unified `BioPoint` device type. `show` contains the `firmware_version` and `hardware_version` fields (new firmware only).
 - Sending commands (configure, etc.) without a device returns an `error` instead of an error log
 - `download-memory` has been changed to a device-blocking operation. Upon completion, it returns a `download-memory` response. A timeout or fail returns a `error` response.
+- **Breaking:** `--tcp-out` now **binds** a TCP port and lets any number of clients connect to subscribe to the data stream, instead of connecting outward to a single fixed sink. Each subscriber is served independently — a slow or disconnected consumer no longer affects the others. Connect to it to receive data (e.g. `nc <ip> <port>`).
+- TCP output records are now newline-delimited JSON, so streaming clients can split the byte stream into individual packets.
+- Fixed network/stdout outputs silently and permanently stopping after a single internal lag (when a consumer briefly fell behind). Dropped packets are now logged and streaming continues.
+- Fixed TCP input busy-looping at 100% CPU after a client disconnected, and no longer terminates the input handler when a client sends malformed UTF-8.
+- TCP output no longer panics at startup (or on reconnect) when no peer is listening, since it is now a listener rather than an outbound client.
+- UDP output no longer terminates on a transient datagram send error; the error is logged and streaming continues.
 
 ### New packet structure (PPG)
 
