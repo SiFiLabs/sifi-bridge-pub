@@ -40,6 +40,8 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Removed `--all` flags from `> start; stop; event` commands, as they added unnecessary complexity and it is expected that frontends will keep track of created devices anyways
 - Renamed `"devices"` field from `> start; stop; event` commands to `"id"` to be in-line with the other packets' schema
 - Renamed `"data_lost_count"` Data Packet key to `"samples_lost"`
+- Renamed the Data Packet's packet time-of-arrival key from `"timestamp"` to `"received_at"`, to avoid confusion with the per-sample `"timestamps"` array. `"received_at"` is the host's Unix epoch arrival time; `"timestamps"` is the device-derived per-sample series
+- Data Packet `"data"` channels are now emitted in a stable, deterministic order instead of a randomized one
 - Changed `"timestamps"` to be relative to the acquisition start time instead of Unix Epoch
 - CSV publisher has been removed. It is now a thin hook onto the buffering subsystem in an export-only manner using `buffer export csv [...]`.
 - `on50`, `on60` renamed to `50` and `60` in the CLI arguments
@@ -97,7 +99,7 @@ The most important user-facing changes are the new [Data Packet structure](#new-
   "samples_lost": 0,
   "sample_rate": 42.39877719866005,
   "status": "ok",
-  "timestamp": 1758673310.618
+  "received_at": 1758673310.618
 }
 ```
 
@@ -120,15 +122,15 @@ The following event types are defined, and are encoded with the packet's `data` 
   "data": {
     "event": [1]
   },
-  "data_timestamps": {
+  "timestamps": {
     "event": [1758673309.48]
   },
-  "data_lost_count": {
+  "samples_lost": {
     "event": 0
   },
   "sample_rate": 0,
   "status": "ok",
-  "timestamp": 1758673310.618
+  "received_at": 1758673310.618
 }
 ```
 
