@@ -8,7 +8,9 @@ This release is made jointly with the release of the next generation SiFi device
 
 The most important user-facing changes are the new [Data Packet structure](#new-packet-structure-ppg).
 
-- Added support for changing sensor sampling rates. Please be wary of the limitations as described in the docs
+- Added support for changing sensor sampling rates via each sensor's `> configure <sensor> --fs`. Rates are enforced to academic/medical standard values per sensor (ECG: 250/500/1000/2000, EMG: 500/1000/1600/2000, EDA: 4/8/16/32/50, IMU: 12.5/25/50/100/200 (common to both IMU chips), Temperature: 1/2/4/5/10 Hz); out-of-range values are rejected rather than silently snapped
+- For PPG, configuration exposes the two hardware primitives directly: `> configure ppg --sps` (raw AFE rate, one of 50/100/200/400/800/1000/1600/3200 Hz) and `--avg` (averaging, one of 1/2/4/8/16/32), both enforced. The effective output rate (`sps / avg`) is capped at 400 Hz — a combination above the ceiling is rejected (lower `--sps` or raise `--avg`). The effective rate is reported live in each packet's `sample_rate`. Also fixed a PPG ADC-rate encode/decode table mismatch that mis-mapped the 1600/3200 Hz raw rates
+- Added `> configure temperature` to configure the temperature sensor sampling rate
 - Added new IMU configurations to REPL, refer to docs for details
 - Added new PPG configurations to REPL, refer to docs for details
 - Added mains notch and DC notch filtering to ECG, EMG and EDA/BIOZ
@@ -18,7 +20,7 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Added `> command identify-hardware` to fetch hardware configuration from device. Only internally useful
 - Added `> configure stealth-mode` to disable the LEDs during acquisition for specific use cases
 - Added `> configure motor-intensity` to set the desired vibration motor intensity
-- Added `> configure adc-gain` to configure the ECG and EMG ADC gain either in high resolution mode or high dynamic range mode
+- Added `> configure high-gain on|off` to toggle high gain on the ECG and EMG ADC (high gain uses more of the dynamic range; off is normal gain)
 - Added `> firmware-update` DFU capability within the REPL, although the current integration is still under development for robustness
 - Added `> rename` command to rename a device. You can then connect either via the custom name, device type (eg BioPoint) or auto-connect
 - Added support for device events, which are currently either (a) button press or (b) software event (see [here](#events))
