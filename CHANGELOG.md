@@ -8,60 +8,76 @@ This release is made jointly with the release of the next generation SiFi device
 
 The most important user-facing changes are the new [Data Packet structure](#new-packet-structure-ppg).
 
-- Added support for changing sensor sampling rates via each sensor's `> configure <sensor> --fs`. Rates are enforced to academic/medical standard values per sensor (ECG: 250/500/1000/2000, EMG: 500/1000/1600/2000, EDA: 4/8/16/32/50, IMU: 12.5/25/50/100/200 (common to both IMU chips), Temperature: 1/2/4/5/10 Hz); out-of-range values are rejected rather than silently snapped
-- For PPG, configuration exposes the two hardware primitives directly: `> configure ppg --sps` (raw AFE rate, one of 50/100/200/400/800/1000/1600/3200 Hz) and `--avg` (averaging, one of 1/2/4/8/16/32), both enforced. The effective output rate (`sps / avg`) is capped at 400 Hz — a combination above the ceiling is rejected (lower `--sps` or raise `--avg`). The effective rate is reported live in each packet's `sample_rate`. Also fixed a PPG ADC-rate encode/decode table mismatch that mis-mapped the 1600/3200 Hz raw rates
-- Added `> configure temperature` to configure the temperature sensor sampling rate
+### Added
+
+- Added support for changing sensor sampling rates via each sensor's `> configure <sensor> --fs`. Out-of-range values are rejected rather than silently snapped
+- For PPG, configuration exposes the two hardware primitives directly: `> configure ppg --sps` (raw AFE rate) and `--avg` both enforced. The effective output rate (`sps / avg`) is capped at 800 Hz
+- Added `> configure temperature` to configure the temperature sensor
 - Added new IMU configurations to REPL, refer to docs for details
 - Added new PPG configurations to REPL, refer to docs for details
-- Added mains notch and DC notch filtering to ECG, EMG and EDA/BIOZ
-- Added `timestamps` key to packets, which contain the unix epoch timestamp of each sample. Timestamps are calculated from the **number of samples of the channel** and **its configured sampling rate**, **not** the on-the-fly `sampling_rate` packet value
+- Added mains notch and DC notch filtering to ECG, EMG and EDA
+- Added `timestamps` key to packets, which contain the unix epoch timestamp of each sample.
 - Added support for automatic reconfiguration from StartPacket
 - Added `> download-memory` to REPL for a more streamlined interface to download a device's memory to CSV
-- Added `> command identify-hardware` to fetch hardware configuration from device. Only internally useful
-- Added `> configure stealth-mode` to disable the LEDs during acquisition for specific use cases
-- Added `> configure motor-intensity` to set the desired vibration motor intensity
+- Added `> configure night on|off` to disable the LEDs during acquisition for specific use cases
 - Added `> configure high-gain on|off` to toggle high gain on the ECG and EMG ADC (high gain uses more of the dynamic range; off is normal gain)
-- Added `> firmware-update` DFU capability within the REPL, although the current integration is still under development for robustness
+- Added `> dfu` DFU capability within the REPL, although the current integration is still under development for robustness
 - Added `> rename` command to rename a device. You can then connect either via the custom name, device type (eg BioPoint) or auto-connect
 - Added support for device events, which are currently either (a) button press or (b) software event (see [here](#events))
 - Added `> event` to generate a "Software Event"
 - Added `"start_time"` key to Start Time packet. It contains the acquisition start time as a unix epoch timestamp, used internally as the acquisition's timebase for the current acquisition
 - Added the buffering subsystem exposed via `buffer` subcommands.
 - Added the HDF5 export format, which is more efficient, self-contained and more adapted for biosignal acquisitions under `buffer export hdf`.
-- Added `--all` flag to `> configure`, `> command`, `> start`, `> stop` and `> event` to apply the command to every managed device instead of only the active one. Per-device responses are returned as an aggregated `multi` response.
+- Added first-class device action commands to the REPL, replacing the generic `> command <raw>` escape hatch: `> led <1|2> --state <on|off>`, `> motor [--intensity <0-10>] [--state <on|off>]`, `> status-update <on|off>`, `> erase-memory` and `> power-off`. `> motor` subsumes the former `> configure motor-intensity`: pass `--intensity` to set the level, `--state` to start/stop, or both (at least one required)
+- Added `--all` flag to `> configure`, `> start`, `> stop`, `> event`, `> led`, `> motor`, `> status-update`, `> erase-memory` and `> power-off` to apply the command to every managed device instead of only the active one. Per-device responses are returned as an aggregated `multi` response.
+
+### Changed
+
 - Streamlined device information in command responses. Commands include: the device unique `id`, the device name `name`, connection status `connected`, device type `device`. All commands include this info, **except Buffer commands and List**.
 - Streamlined REPL commands failure mode. Commands that fail (i.e., trying to configure without a device) will return an `Error` with an optional `message` field containing details on the error
 - Changed the prompt from `>>>` to `>`
-- Removed "Max" from BleTxPower options
 - PPG now always delivers packets with each channel of equal length
+- Data packets now always carry `device`, `id`, `name` and `mac`
 - Renamed `> configure channels` to `> configure sensors` for consistency
+- Renamed several commands/flags for a consistent v2 surface: `> show` → `> info`; `> update-firmware` → `> dfu` (matches the CLI subcommand); `> configure night-mode` → `> configure night` and `> configure low-latency-mode` → `> configure low-latency`; the device selector is now `handle` everywhere (`> select <handle>`, `buffer --handle`); PPG LED currents `--iir/--ired/--igreen/--iblue` → `--led-ir/--led-red/--led-green/--led-blue`; ECG/EMG/EDA bandpass cutoffs `--flo/--fhi` → `--bandpass-low/--bandpass-high`; `buffer export` now takes `--format`. `> led` and `> motor` now take their state via `--state` rather than a positional (`> led` to leave room for future per-LED config); `> configure motor-intensity` was folded into `> motor --intensity` (validated `0..=10`)
 - All sensor configurations are now optional. Omitting a parameter will leave it as-is.
-- Devices sessions automatically reconfigure themselves from the parameters sent by the device, for example at the start of an acquisition or Identify Hardware packet
-- Deprecated `> serial` due to the new `> download-memory` command
 - `> download-memory` downloads the data from the device memory into the **buffering subsystem**. To export to file, it is required to subsequently use `buffer export`
-- Removed `--all` flags from `> start; stop; event` commands, as they added unnecessary complexity and it is expected that frontends will keep track of created devices anyways
 - Renamed `"devices"` field from `> start; stop; event` commands to `"id"` to be in-line with the other packets' schema
 - Renamed `"data_lost_count"` Data Packet key to `"samples_lost"`
 - Renamed the Data Packet's packet time-of-arrival key from `"timestamp"` to `"received_at"`, to avoid confusion with the per-sample `"timestamps"` array. `"received_at"` is the host's Unix epoch arrival time; `"timestamps"` is the device-derived per-sample series
 - Data Packet `"data"` channels are now emitted in a stable, deterministic order instead of a randomized one
 - Changed `"timestamps"` to be relative to the acquisition start time instead of Unix Epoch
-- CSV publisher has been removed. It is now a thin hook onto the buffering subsystem in an export-only manner using `buffer export csv [...]`.
 - `on50`, `on60` renamed to `50` and `60` in the CLI arguments
 - PPG `acc-range` and `gyro-range` now only take a numeric argument for readability
-- Removed deep sleep command as it is now obsolete
 - Reworked the device lifecycle (see [here](#device-lifecycle))
-- Fixed PPG conversion factors and added real-time update of PPG parameters
-- Fixed Memory download sample timestamps
 - Improved BLE robustness in the connection process
-- Removed `BioPoint_v1_0`, `BioPoint_v1_1`, etc. in favor of a unified `BioPoint` device type. `show` contains the `firmware_version` and `hardware_version` fields (new firmware only).
+- Removed `BioPoint_v1_0`, `BioPoint_v1_1`, etc. in favor of a unified `BioPoint` device type. `info` contains the `firmware_version` and `hardware_version` fields (new firmware only).
 - Sending commands (configure, etc.) without a device returns an `error` instead of an error log
 - `download-memory` has been changed to a device-blocking operation. Upon completion, it returns a `download-memory` response. A timeout or fail returns a `error` response.
 - **Breaking:** `--tcp-out` now **binds** a TCP port and lets any number of clients connect to subscribe to the data stream, instead of connecting outward to a single fixed sink. Each subscriber is served independently — a slow or disconnected consumer no longer affects the others. Connect to it to receive data (e.g. `nc <ip> <port>`).
 - TCP output records are now newline-delimited JSON, so streaming clients can split the byte stream into individual packets.
+
+### Deprecated
+
+- Deprecated `> serial` due to the new `> download-memory` command
+
+### Removed
+
+- Removed "Max" from BleTxPower options
+- CSV publisher has been removed. It is now a thin hook onto the buffering subsystem in an export-only manner using `buffer export csv [...]`.
+- Removed deep sleep command as it is now obsolete
+- Removed the generic `> command <raw>`. The user-relevant ones are now first-class commands (`> led`, `> motor`, `> status-update`, `> erase-memory`, `> power-off`)
+
+### Fixed
+
+- Fixed the Data Packet `sample_rate`, which read systematically low: it was dividing the cumulative sample count by host-clock time elapsed since the acquisition start (precise to the second)
+- Fixed PPG conversion factors and added real-time update of PPG parameters
+- Fixed Memory download sample timestamps
 - Fixed network/stdout outputs silently and permanently stopping after a single internal lag (when a consumer briefly fell behind). Dropped packets are now logged and streaming continues.
 - Fixed TCP input busy-looping at 100% CPU after a client disconnected, and no longer terminates the input handler when a client sends malformed UTF-8.
 - TCP output no longer panics at startup (or on reconnect) when no peer is listening, since it is now a listener rather than an outbound client.
 - UDP output no longer terminates on a transient datagram send error; the error is logged and streaming continues.
+- Fixed the program hanging on `exit`/`quit` (requiring Ctrl-C) when `--tcp-out` was active: the TCP output accept loop now stops on shutdown and releases the data channel so the process terminates cleanly.
 
 ### New packet structure (PPG)
 
