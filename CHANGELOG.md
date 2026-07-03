@@ -78,6 +78,7 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - TCP output no longer panics at startup (or on reconnect) when no peer is listening, since it is now a listener rather than an outbound client.
 - UDP output no longer terminates on a transient datagram send error; the error is logged and streaming continues.
 - Fixed the program hanging on `exit`/`quit` (requiring Ctrl-C) when `--tcp-out` was active: the TCP output accept loop now stops on shutdown and releases the data channel so the process terminates cleanly.
+- Fixed a side-effect where sampling rates could get reset to defaults sometimes after starting an acquisition
 
 ### New packet structure (PPG)
 
