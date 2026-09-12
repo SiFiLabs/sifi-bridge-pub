@@ -4,13 +4,14 @@ This file summarizes the changes of every SiFi Bridge release.
 
 ## [2.0.0] - 2026-XX-XX
 
-This release is made jointly with the release of the next generation SiFi devices with expanded configuration capabilities. Refer to the revamped User Guide for in-depth documentation about the new features and possible configurations.
-
-The most important user-facing changes are the new [Data Packet structure](#new-packet-structure-ppg).
+This release is made jointly with the release of the next generation SiFi devices with expanded configuration capabilities. Refer to the new [docs](https://docs.sifilabs.com/) for in-depth documentation about the new features and possible configurations.
 
 ### Added
 
-- Added support for changing sensor sampling rates via each sensor's `> configure <sensor> --fs`. Out-of-range values are rejected rather than silently snapped
+- Added `SiFiBandFocus` as a device type. It reports `"device": "SiFiBandFocus"`
+- Added a `sensors` object to device `> info`, listing which sensors the connected device physically has (`{"ecg": false, "emg": true, ...}`)
+- Added the device working state. It shows up as `"device_state"` both in device info and on Status data packets
+- Added support for changing sensor sampling rates via each sensor's `> configure <sensor> --fs`
 - For PPG, configuration exposes the two hardware primitives directly: `> configure ppg --sps` (raw AFE rate) and `--avg` both enforced. The effective output rate (`sps / avg`) is capped at 800 Hz
 - Added `> configure temperature` to configure the temperature sensor
 - Added new IMU configurations to REPL, refer to docs for details
@@ -18,26 +19,28 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Added mains notch and DC notch filtering to ECG, EMG and EDA
 - Added `timestamps` key to packets, which contain the unix epoch timestamp of each sample.
 - Added support for automatic reconfiguration from StartPacket
-- Added `> download-memory` to REPL for a more streamlined interface to download a device's memory to CSV
-- Added `> configure night on|off` to disable the LEDs during acquisition for specific use cases
+- Added `> download-memory` to REPL for a more streamlined interface to download a device's data to disk
+- Added `> configure night on|off` to disable the LEDs (BLE, Power and User LED) during acquisition for specific use cases
 - Added `> configure high-gain on|off` to toggle high gain on the ECG and EMG ADC (high gain uses more of the dynamic range; off is normal gain)
-- Added `> dfu` DFU capability within the REPL, although the current integration is still under development for robustness
+- Added `> dfu` to the REPL
 - Added `> rename` command to rename a device. You can then connect either via the custom name, device type (eg BioPoint) or auto-connect
 - Added support for device events, which are currently either (a) button press or (b) software event (see [here](#events))
 - Added `> event` to generate a "Software Event"
 - Added `"start_time"` key to Start Time packet. It contains the acquisition start time as a unix epoch timestamp, used internally as the acquisition's timebase for the current acquisition
-- Added the buffering subsystem exposed via `buffer` subcommands.
+- Added the buffering subsystem, exposed via `buffer` subcommands.
 - Added the HDF5 export format, which is more efficient, self-contained and more adapted for biosignal acquisitions under `buffer export hdf`.
-- Added first-class device action commands to the REPL, replacing the generic `> command <raw>` escape hatch: `> led <1|2> --state <on|off>`, `> motor [--intensity <0-10>] [--state <on|off>]`, `> status-update <on|off>`, `> erase-memory` and `> power-off`. `> motor` subsumes the former `> configure motor-intensity`: pass `--intensity` to set the level, `--state` to start/stop, or both (at least one required)
+- Added first-class device action commands to the REPL, replacing the generic `> command <raw>`: `> led <1|2> --state <on|off>`, `> motor [--intensity <0-10>] [--state <on|off>]`, `> status-update <on|off>`, `> erase-memory` and `> power-off`. `> motor` subsumes the former `> configure motor-intensity`: pass `--intensity` to set the level, `--state` to start/stop, or both (at least one required)
 - Added `--all` flag to `> configure`, `> start`, `> stop`, `> event`, `> led`, `> motor`, `> status-update`, `> erase-memory` and `> power-off` to apply the command to every managed device instead of only the active one. Per-device responses are returned as an aggregated `multi` response.
+- Added `> erase-memory --format`, which fully formats the device's internal flash instead of only erasing the stored recordings.
 
 ### Changed
 
 - Streamlined device information in command responses. Commands include: the device unique `id`, the device name `name`, connection status `connected`, device type `device`. All commands include this info, **except Buffer commands and List**.
 - Streamlined REPL commands failure mode. Commands that fail (i.e., trying to configure without a device) will return an `Error` with an optional `message` field containing details on the error
 - Changed the prompt from `>>>` to `>`
+- Export filenames now stamp the acquisition start with ISO 8601 basic format (`AA_BB_CC_DD_EE_FF_20260827T143005_emg.csv`). Files still sort chronologically. This also addresses previous issues reported when exporting a device ID'd via MAC on Windows due to the colons (":")
 - PPG now always delivers packets with each channel of equal length
-- Data packets now always carry `device`, `id`, `name` and `mac`
+- `> info` reports the device configuration under `configuration` rather than a second `device` key. The response emitted `device` twice in one object — once as the device type string, once as the configuration block — and duplicate keys are undefined behaviour in JSON: some parsers keep the first, some the last, some reject the document outright, so the type string was unreachable to a standard parser. `device` now means the same thing in every response: the device type, as a string
 - Renamed `> configure channels` to `> configure sensors` for consistency
 - Renamed several commands/flags for a consistent v2 surface: `> show` → `> info`; `> update-firmware` → `> dfu` (matches the CLI subcommand); `> configure night-mode` → `> configure night` and `> configure low-latency-mode` → `> configure low-latency`; the device selector is now `handle` everywhere (`> select <handle>`, `buffer --handle`); PPG LED currents `--iir/--ired/--igreen/--iblue` → `--led-ir/--led-red/--led-green/--led-blue`; ECG/EMG/EDA bandpass cutoffs `--flo/--fhi` → `--bandpass-low/--bandpass-high`; `buffer export` now takes `--format`. `> led` and `> motor` now take their state via `--state` rather than a positional (`> led` to leave room for future per-LED config); `> configure motor-intensity` was folded into `> motor --intensity` (validated `0..=10`)
 - All sensor configurations are now optional. Omitting a parameter will leave it as-is.
@@ -48,7 +51,7 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - Data Packet `"data"` channels are now emitted in a stable, deterministic order instead of a randomized one
 - Changed `"timestamps"` to be relative to the acquisition start time instead of Unix Epoch
 - `on50`, `on60` renamed to `50` and `60` in the CLI arguments
-- PPG `acc-range` and `gyro-range` now only take a numeric argument for readability
+- `> configure imu --acc-range` now takes a plain number for readability, and offers only `8` and `16`, defaulting to `16`. The firmware reads the IMU through its 20-bit high-resolution FIFO, which pins sensitivity to one step size per IMU part: a narrower range buys no resolution, and below ±8 g it only clips
 - Reworked the device lifecycle (see [here](#device-lifecycle))
 - Improved BLE robustness in the connection process
 - Removed `BioPoint_v1_0`, `BioPoint_v1_1`, etc. in favor of a unified `BioPoint` device type. `info` contains the `firmware_version` and `hardware_version` fields (new firmware only).
@@ -56,29 +59,40 @@ The most important user-facing changes are the new [Data Packet structure](#new-
 - `download-memory` has been changed to a device-blocking operation. Upon completion, it returns a `download-memory` response. A timeout or fail returns a `error` response.
 - **Breaking:** `--tcp-out` now **binds** a TCP port and lets any number of clients connect to subscribe to the data stream, instead of connecting outward to a single fixed sink. Each subscriber is served independently — a slow or disconnected consumer no longer affects the others. Connect to it to receive data (e.g. `nc <ip> <port>`).
 - TCP output records are now newline-delimited JSON, so streaming clients can split the byte stream into individual packets.
-
-### Deprecated
-
-- Deprecated `> serial` due to the new `> download-memory` command
+- Moved `start_time` out of a Start Time packet's `data` channels to a top-level `start_time` field
+- TCP input replies are now newline-delimited, as the data output stream already was, so a client can frame consecutive replies instead of receiving `{...}{...}`
 
 ### Removed
 
+- Removed `> serial` due to the new `> download-memory` command
 - Removed "Max" from BleTxPower options
-- CSV publisher has been removed. It is now a thin hook onto the buffering subsystem in an export-only manner using `buffer export csv [...]`.
+- CSV publisher has been removed. It is now a thin hook onto the buffering subsystem in an export-only manner using `> buffer export`.
 - Removed deep sleep command as it is now obsolete
-- Removed the generic `> command <raw>`. The user-relevant ones are now first-class commands (`> led`, `> motor`, `> status-update`, `> erase-memory`, `> power-off`)
+- Removed the `> command` subcommand
+- Removed `> configure imu --gyro-range`, along with the `gyro_range` field in device `> info` and the matching HDF5 attribute. The firmware reads the IMU through its 20-bit high-resolution FIFO, which pins gyroscope full scale per IMU part no matter what that field is set to — selecting a narrower range bought no resolution and did not change the range delivered. The pinned full scale for each part is documented in the device spec sheet (§6.1, Packet Structure); the IMU part itself is still reported, as `chip` in device `> info` and on the exported `imu` group. Only 2.0.0 pre-releases ever exposed this setting
+- Removed the `accel_range` HDF5 attribute on the exported `imu` group. Full-scale selection does not change the step size the high-resolution FIFO delivers, so it is not needed to interpret the data; the setting is still reported in device `> info`
+- Removed `completed` from the acquisitions reported by `> buffer list` and `> buffer info`. It only ever flipped when the *next* acquisition started, so a stopped acquisition was indistinguishable from a running one and the field could not be used for what it looked like it meant
 
 ### Fixed
 
-- Fixed the Data Packet `sample_rate`, which read systematically low: it was dividing the cumulative sample count by host-clock time elapsed since the acquisition start (precise to the second)
+- A Start Time packet whose datetime does not exist no longer crashes the bridge. A device whose real-time clock came up wrong (an impossible date, or an hour skipped by a daylight-saving change) took down the connection to that device; it is now reported as `"status": "invalid_datetime"` on the packet, with no `start_time`, and the acquisition keeps recording
+- Fixed potential issues in the memory download when Status Updates were enabled. Bridge now temporarily disables status update during the download and restores them after.
+- The first packet of a sensor stream no longer reports `sample_rate: 0.0`. The rate takes two samples to measure; until then the field is now absent rather than zero, so a consumer reading it off the first packet has nothing to divide by
+- Unrecognised commands now answer on stdout with an `Error` object, like every other failure. The diagnostic went only to stderr as human-readable text, so a client waiting on stdout for a reply — the documented way to drive the REPL — waited forever on a typo. `help` still prints its text to stderr and is not wrapped in an error
+- `samples_lost`, `timestamps` and `data` are no longer marked `required` by the schema exported from `> schema`. All three are omitted when empty — `samples_lost` on every healthy packet — so anyone generating a strict parser from that schema, which the docs recommend, rejected the entire data stream
+- Every channel the bridge emits is now declared in the exported `BioChannel` schema: `memory_used_kbytes`, the Start Time date parts (`year` through `second`), and the flash self-test diagnostics (`bad_page_index`, `bad_page_total`, `test_progress`). Code generated from `> schema` had no type for channels the device sends on every status update. The names on the wire are unchanged
+- Various TCP input improvements
+- Various UDP output fixes and improvements
+- Fixed the Data Packet `sample_rate`, which read systematically low
 - Fixed PPG conversion factors and added real-time update of PPG parameters
 - Fixed Memory download sample timestamps
-- Fixed network/stdout outputs silently and permanently stopping after a single internal lag (when a consumer briefly fell behind). Dropped packets are now logged and streaming continues.
-- Fixed TCP input busy-looping at 100% CPU after a client disconnected, and no longer terminates the input handler when a client sends malformed UTF-8.
-- TCP output no longer panics at startup (or on reconnect) when no peer is listening, since it is now a listener rather than an outbound client.
-- UDP output no longer terminates on a transient datagram send error; the error is logged and streaming continues.
-- Fixed the program hanging on `exit`/`quit` (requiring Ctrl-C) when `--tcp-out` was active: the TCP output accept loop now stops on shutdown and releases the data channel so the process terminates cleanly.
+- Fixed the program hanging on `exit`/`quit` (requiring Ctrl-C) when `--tcp-out` was active
 - Fixed a side-effect where sampling rates could get reset to defaults sometimes after starting an acquisition
+- Fixed HDF5 and CSV export failing on Windows when the device's ID is its MAC address dur to colon characters. Characters that are reserved on any platform are now replaced with `_` in the filename; the ID is still recorded verbatim in the HDF5 `device_name` attribute
+- Fixed CSV exports potentially putting their columns in a different order on every run. Column order is now the canonical channel order (`ecg`, `emg`, `eda`, `imu`, `ax`…`qz`, `ppg`…)
+- Fixed two acquisitions that start within the same second exporting to the same filename, where the second silently overwrote the first. The later one now gets a numbered suffix
+- Fixed a failed HDF5 export destroying the file left by a previous successful export of the same acquisition
+- Various fixes related to `> dfu` to improve robustness
 
 ### New packet structure (PPG)
 
