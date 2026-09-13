@@ -2,7 +2,7 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
-## [2.0.0] - 2026-XX-XX
+## [2.0.0] - 2026-09-12
 
 This release is made jointly with the release of the next generation SiFi devices with expanded configuration capabilities. Refer to the new [docs](https://docs.sifilabs.com/) for in-depth documentation about the new features and possible configurations.
 
