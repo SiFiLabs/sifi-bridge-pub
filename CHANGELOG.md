@@ -1,6 +1,20 @@
-# Change Log
+# Change log
 
 This file summarizes the changes of every SiFi Bridge release.
+
+## 2.0.1 - 2026-09-17
+
+### Added
+
+- Added quoting to REPL and TCP input, so an argument with spaces in it like a path or a device name, can be passed as one value: `> connect "My Band"`, `> buffer export --format csv --dir "/Users/me/My Data"`, `> dfu "C:\My Firmware\app.zip"`. An unterminated quote answers with an `Error` on stdout.
+
+### Changed
+
+- Removed the JSON error messages in terminal sessions when entering invalid/unknown commands.
+
+### Removed
+
+### Fixed
 
 ## [2.0.0] - 2026-09-12
 
@@ -71,7 +85,7 @@ This release is made jointly with the release of the next generation SiFi device
 - Removed the `> command` subcommand
 - Removed `> configure imu --gyro-range`, along with the `gyro_range` field in device `> info` and the matching HDF5 attribute. The firmware reads the IMU through its 20-bit high-resolution FIFO, which pins gyroscope full scale per IMU part no matter what that field is set to — selecting a narrower range bought no resolution and did not change the range delivered. The pinned full scale for each part is documented in the device spec sheet (§6.1, Packet Structure); the IMU part itself is still reported, as `chip` in device `> info` and on the exported `imu` group. Only 2.0.0 pre-releases ever exposed this setting
 - Removed the `accel_range` HDF5 attribute on the exported `imu` group. Full-scale selection does not change the step size the high-resolution FIFO delivers, so it is not needed to interpret the data; the setting is still reported in device `> info`
-- Removed `completed` from the acquisitions reported by `> buffer list` and `> buffer info`. It only ever flipped when the *next* acquisition started, so a stopped acquisition was indistinguishable from a running one and the field could not be used for what it looked like it meant
+- Removed `completed` from the acquisitions reported by `> buffer list` and `> buffer info`. It only ever flipped when the _next_ acquisition started, so a stopped acquisition was indistinguishable from a running one and the field could not be used for what it looked like it meant
 
 ### Fixed
 
@@ -169,7 +183,7 @@ The following event types are defined, and are encoded with the packet's `data` 
 
 ### Device lifecycle
 
-In previous sifibridge versions, devices had an immutable name (BioPoint_v1_3, SiFiBand, etc.). To handle multiple devices at once, sifibridge proposed _managers_, which were basically a software abstraction with a user-defined name to interact with a device.
+In previous sifibridge versions, devices had an immutable name (BioPoint*v1_3, SiFiBand, etc.). To handle multiple devices at once, sifibridge proposed \_managers*, which were basically a software abstraction with a user-defined name to interact with a device.
 
 They were created with `> new <manager name>` and deleted with `> delete`. After creation, the user needed to `> connect` to a device. In short, it was a 2-step workflow.
 
