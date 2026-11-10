@@ -1,0 +1,37 @@
+SiFi Labs 4-Clause License
+
+Copyright (c) 2026, SiFi Labs Inc.
+All rights reserved.
+
+Use and redistribution in binary form only, without modification, are
+permitted provided that the following conditions are met:
+
+1. Redistributions must reproduce the above copyright notice, this list of
+   conditions and the following disclaimer in the documentation and/or other
+   materials provided with the distribution. Redistribution is permitted free
+   of charge or as part of a larger software product or work, but this
+   software may not be sold or licensed for a fee on its own.
+
+2. Neither the name of SiFi Labs Inc. nor the names of its contributors may be
+   used to endorse or promote products derived from this software without
+   specific prior written permission.
+
+3. This software must not be used with any device that emulates, replicates
+   or implements the communication protocol of devices manufactured or sold by
+   SiFi Labs Inc., unless that device is manufactured or sold by SiFi Labs Inc.
+   or its use is authorized by SiFi Labs Inc. in writing.
+
+4. This software must not be reverse engineered, decompiled, modified and/or
+   disassembled, except to the extent that applicable law expressly permits
+   such activity notwithstanding this limitation.
+
+THIS SOFTWARE IS PROVIDED BY SIFI LABS INC. "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL SIFI LABS INC. OR CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
