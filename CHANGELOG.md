@@ -2,6 +2,22 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
+## 2.0.2 - 2026-11-10
+
+### Added
+
+- SiFi Bridge is licensed under the SiFi Labs 4-Clause License.
+
+### Changed
+
+- The first packet of a sensor stream reports `sample_rate: 0.0` instead of omitting the field. The rate takes two samples to measure, so `0.0` means not yet measured; every sensor packet now carries `sample_rate`
+
+### Fixed
+
+- Fixed ECG and EMG gains.
+- A data packet's `sample_rate` stays correct when the computer's clock is adjusted during a recording (a time sync, a manual change, waking from sleep). Such an adjustment used to make `sample_rate` disappear or read far too low for the rest of the acquisition. `received_at` is still the computer's clock time, in Unix epoch seconds
+- `firmware_version` names the firmware release with a two-digit revision, as releases are numbered: firmware 1.06 is `"1.06"`, where it was reported as `"1.6"`. This applies to `info` and to the `firmware_version` attribute of an HDF5 export
+
 ## 2.0.1 - 2026-09-17
 
 ### Added
