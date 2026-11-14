@@ -2,6 +2,14 @@
 
 This file summarizes the changes of every SiFi Bridge release.
 
+## 2.0.3 - 2026-11-14
+
+### Fixed
+
+- When connecting to devices by name, sifibridge now prefers exact matches over partial matches.
+- Removed 1600 Hz EMG from BioPoint as it was unsupported. 1600 Hz EMG remains supported for SiFiBand.
+- A SiFiBand Focus, which has no temperature sensor, no longer streams `temperature` packets or reports `temperature` in `status` packets.
+
 ## 2.0.2 - 2026-11-10
 
 ### Added
